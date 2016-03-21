@@ -1,4 +1,4 @@
-####
+###
 # Plot Frequency of offences
 # dat should have columns 'Offense' and 'Count'
 plot.offenses = function(dat, year){
@@ -24,6 +24,8 @@ prepare.dataset = function(df){
     df$START_DATE = rm.last_ch(df$START_DATE, 5)
     df$START_DATE = gsub('T', ' ',df$START_DATE)
     df$START_DATE = ymd_hms(df$START_DATE)
+    df$DAY = weekdays(df$START_DATE)
+    df$YEAR = year(df$START_DATE)
     df$WEEK = week(df$START_DATE)
     df$MONTH = month(df$START_DATE)
     df$WDAY = ifelse(wday(df$START_DATE) >= 1 & wday(df$START_DATE) < 6, 'WD', 'WE')
@@ -31,7 +33,19 @@ prepare.dataset = function(df){
     df = df[!is.na(df$START_DATE),]
     return(df)
 }
-
+# Load ACS dataset
+load_ACS = function(table, year){
+    root = './data/ACS/'
+    root_name = paste0('ACS_', year, '_5YR_', table)
+    file_name = paste0(root_name, '.csv')
+    full_path = paste0(root, root_name, '/',file_name)
+    df = read.csv(full_path, skip=2, header = FALSE, stringsAsFactors = FALSE)
+    nam = read.csv(full_path, nrows = 1)
+    nam = names(nam)
+    names(df) = nam
+    df$YEAR = paste0(20,year)
+    return(df)
+}
 # Plor ACF
 ggplot.acf = function(acf1, main_title){
     require(ggplot2)
@@ -42,7 +56,7 @@ ggplot.acf = function(acf1, main_title){
         geom_hline(aes(yintercept = 0), size = .1) +
         geom_hline(aes_q(yintercept = -conf_int), linetype = 'dashed', colour = 'blue',size = .08) +
         geom_hline(aes_q(yintercept = conf_int), linetype = 'dashed', colour = 'blue',size = .08) +
-        geom_segment(mapping = aes(xend = lag, yend = 0), size = 0.1, colour = 'grey8')
+        geom_segment(mapping = aes(xend = lag, yend = 0), size = 0.1, colour = 'black')
     g = g + ggtitle(main_title)
     g = g + theme_bw() + theme(axis.ticks = element_blank(),
                                panel.grid.major.y = element_blank(),
@@ -104,5 +118,16 @@ get.AccuData = function(accu){
     df[,1] = ymd(df[,1])
     return(df)
 }
+
+# Convert column to factor
+# df a dataframe
+# indexes a numeric indexes of the columns to be converterd to factors
+col_2factors = function(df, indexes){
+    for(i in indexes){
+        df[,i] = as.factor(df[,i])
+        }
+    return(df)
+}
+
 
 

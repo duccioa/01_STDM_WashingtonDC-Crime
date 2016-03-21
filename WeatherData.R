@@ -1,9 +1,21 @@
 library(reshape2)
+library(ggplot2)
+library(lubridate)
 source('STDM_functions.R')
-accu_csv = read.csv('./data/AccuWeather_2R.csv', header = F, stringsAsFactors = FALSE)
-accu = get.AccuData(accu_csv)
+# Manipulate raw data
+#accu_csv = read.csv('./data/AccuWeather_2R.csv', header = F, stringsAsFactors = FALSE)
+#accu = get.AccuData(accu_csv)
+#write.table(accu,'./Data/WashingtonDC_weather.csv', sep = ',')
 
+###################################################
+# Load manipulated data
+accu = read.csv('./Data/WashingtonDC_weather.csv', stringsAsFactors = F, sep = ',')
+accu = accu[,c(1:8, 14:17)]
+accu$Date = ymd(accu$Date)
+accu = accu[!is.na(accu$Date),]
+###################################################
 
+# Visualise weather data
 act_temp = accu[,1:4]
 act_temp = act_temp[!is.na(act_temp[,2]), ]
 act_temp = melt(act_temp, id = 'Date')
@@ -20,7 +32,7 @@ ggplot(norm_temp, aes(x = Date, y = value, group = variable, colour = variable))
     ggtitle('Normalized temperatures, Washington DC')
 ggsave('./Figures/norm_temp.png', width = 5, height = 3, units = 'cm')
 
-precip = accu[,c(1,13,14)]
+precip = accu[,c(1,9,10)]
 precip = melt(precip, id = 'Date')
 ggplot(precip,(aes(x = Date, y = value, group = variable, colour = variable))) + 
     geom_line()
