@@ -15,6 +15,10 @@ return(g)
 rm.last_ch = function(x, n){
     substr(x, 1, nchar(x) - n)
 }
+# Remove the first n characters from a string
+rm.first_ch = function(x, n){
+    substr(x, n+1, nchar(x))
+}
 # Prepare dataset
 prepare.dataset = function(df){
     relevant_columns = c(1,2,3,7,8,13,20,22)
@@ -45,6 +49,16 @@ load_ACS = function(table, year){
     names(df) = nam
     df$YEAR = paste0(20,year)
     return(df)
+}
+# Rename variables in the ACS tables
+rename_acs = function(vect_names, table_name){
+    from = 5
+    names = vect_names[from:length(vect_names)]
+    names = names[1:(length(names)/2)]
+    suff = rm.first_ch(names, 5)
+    var_names = paste(table_name, 'VALUE', suff, sep = '_')
+    var_names = c(vect_names[1:4], var_names, paste(table_name, 'PCT', suff, sep = '_'))
+    return(var_names)
 }
 # Plor ACF
 ggplot.acf = function(acf1, main_title){
