@@ -10,6 +10,7 @@ title_size = 3
 
 
 ###################################################
+crime2011 = read.csv('./data/DC_crime_2011.csv', stringsAsFactors = F)
 crime2012 = read.csv('./data/Crime_Incidents__2012.csv', stringsAsFactors = FALSE)
 crime2013 = read.csv('./data/Crime_Incidents__2013.csv', stringsAsFactors = FALSE)
 crime2014 = read.csv('./data/Crime_Incidents__2014.csv', stringsAsFactors = FALSE)

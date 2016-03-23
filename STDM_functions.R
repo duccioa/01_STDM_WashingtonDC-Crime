@@ -20,20 +20,23 @@ rm.first_ch = function(x, n){
     substr(x, n+1, nchar(x))
 }
 # Prepare dataset
-prepare.dataset = function(df){
-    relevant_columns = c(1,2,3,7,8,13,20,22)
-    names(relevant_columns) = c('X','Y', 'OBJECT', 'OFFENSE', 'METHOD', 
-                                'WARD', 'CENSUS_TRACT', 'START_DATE')
-    df = df[,relevant_columns]
-    df$START_DATE = rm.last_ch(df$START_DATE, 5)
-    df$START_DATE = gsub('T', ' ',df$START_DATE)
-    df$START_DATE = ymd_hms(df$START_DATE)
-    df$DAY = weekdays(df$START_DATE)
-    df$YEAR = year(df$START_DATE)
-    df$WEEK = week(df$START_DATE)
-    df$MONTH = month(df$START_DATE)
-    df$WDAY = ifelse(wday(df$START_DATE) >= 1 & wday(df$START_DATE) < 6, 'WD', 'WE')
+prepare.dataset = function(df, y2011 = F, y){
+    require(lubridate)
+    relevant_columns = c('OFFENSE', 'START_DATE', 'CENSUS_TRACT')
+    df = subset(df, select = relevant_columns)
+    if(y2011){df$START_DATE = mdy_hms(df$START_DATE)}
+    else{
+        df$START_DATE = rm.last_ch(df$START_DATE, 5)
+        df$START_DATE = gsub('T', ' ',df$START_DATE)
+        df$START_DATE = ymd_hms(df$START_DATE)
+    }
+    df$DAY = as.factor(weekdays(df$START_DATE))
+    df$YEAR = as.factor(y)
+    df$WEEK = as.factor(week(df$START_DATE))
+    df$MONTH = as.factor(month(df$START_DATE))
+    df$WDAY = as.factor(ifelse(wday(df$START_DATE) >= 1 & wday(df$START_DATE) < 6, 'WD', 'WE'))
     df$YDAY = yday(df$START_DATE)
+    df$OFFENSE = as.factor(df$OFFENSE)
     df = df[!is.na(df$START_DATE),]
     return(df)
 }
@@ -51,14 +54,19 @@ load_ACS = function(table, year){
     return(df)
 }
 # Rename variables in the ACS tables
-rename_acs = function(vect_names, table_name){
-    from = 5
-    names = vect_names[from:length(vect_names)]
-    names = names[1:(length(names)/2)]
-    suff = rm.first_ch(names, 5)
-    var_names = paste(table_name, 'VALUE', suff, sep = '_')
-    var_names = c(vect_names[1:4], var_names, paste(table_name, 'PCT', suff, sep = '_'))
-    return(var_names)
+rename_ACS = function(df, table_name){
+    n = ncol(df)
+    fixed_names = names(df)[1:4]
+    var_nam = names(df)[5:n]
+    var_nam[grepl('HC01', var_nam)] = paste(table_name,
+                                            'VALUE', rm.first_ch(var_nam[grepl('HC01', var_nam)], 5), 
+                                            sep = '_')
+    var_nam[grepl('HC03', var_nam)] = paste(table_name,
+                                            'PCT', rm.first_ch(var_nam[grepl('HC03', var_nam)], 5), 
+                                            sep = '_')
+    names(df) = c(fixed_names, var_nam)
+    return(df)
+    
 }
 # Plor ACF
 ggplot.acf = function(acf1, main_title){
