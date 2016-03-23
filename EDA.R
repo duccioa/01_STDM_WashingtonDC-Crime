@@ -14,33 +14,32 @@ crime2011 = read.csv('./data/DC_crime_2011.csv', stringsAsFactors = F)
 crime2012 = read.csv('./data/Crime_Incidents__2012.csv', stringsAsFactors = FALSE)
 crime2013 = read.csv('./data/Crime_Incidents__2013.csv', stringsAsFactors = FALSE)
 crime2014 = read.csv('./data/Crime_Incidents__2014.csv', stringsAsFactors = FALSE)
-crime2015 = read.csv('./data/Crime_Incidents__2015.csv', stringsAsFactors = FALSE)
 
-crime2012 = prepare.dataset(crime2012)
-crime2013 = prepare.dataset(crime2013)
-crime2014 = prepare.dataset(crime2014)
-crime2015 = prepare.dataset(crime2015)
+crime2012 = prepare.dataset(crime2012, y = 2012)
+crime2013 = prepare.dataset(crime2013, y = 2013)
+crime2014 = prepare.dataset(crime2014, y = 2014)
+crime2011 = prepare.dataset(crime2011, T, y = 2011)
 
-crime2012$CUM_WEEK = crime2012$WEEK
-crime2013$CUM_WEEK = crime2013$WEEK + 53
-crime2014$CUM_WEEK = crime2014$WEEK + 106
-crime2012$CUM_YDAY = crime2012$YDAY
-crime2013$CUM_YDAY = crime2013$YDAY + 366
-crime2014$CUM_YDAY = crime2014$YDAY + 366*2
-crime2012$CUM_MONTH = crime2012$MONTH
-crime2013$CUM_MONTH = crime2013$MONTH + 12
-crime2014$CUM_MONTH = crime2014$MONTH + 12*2
 
-train = rbind(crime2012, crime2013)
+crime2011$CUM_WEEK = as.numeric(as.character(crime2011$WEEK))
+crime2012$CUM_WEEK = as.numeric(as.character(crime2012$WEEK)) + 53
+crime2013$CUM_WEEK = as.numeric(as.character(crime2013$WEEK)) + 106
+crime2011$CUM_YDAY = as.numeric(as.character(crime2011$YDAY))
+crime2012$CUM_YDAY = as.numeric(as.character(crime2012$YDAY)) + 366
+crime2013$CUM_YDAY = as.numeric(as.character(crime2013$YDAY)) + 366*2
+crime2011$CUM_MONTH = as.numeric(as.character(crime2011$MONTH))
+crime2012$CUM_MONTH = as.numeric(as.character(crime2012$MONTH)) + 12
+crime2013$CUM_MONTH = as.numeric(as.character(crime2013$MONTH)) + 12*2
+
+train = rbind(crime2011,crime2012, crime2013)
 
 
 # Clean the data 
 table(train$YEAR) # there are some years that are not within the expected interval
-train = train[train$YEAR == 2012 | 
-                  train$YEAR == 2013 |
-                  train$YEAR == 2014, ] # select 2012, 2013 and 2014 only
+train = train[train$YEAR == 2011 | 
+                  train$YEAR == 2012 |
+                  train$YEAR == 2013, ] # select 2012, 2013 and 2014 only
 train = train[order(train$START_DATE),]
-train = col_2factors(train,c(4,5,6,7, 9:17))
 write.csv(train, 'train.csv')
 ###################################################
 
@@ -60,7 +59,7 @@ summ_dt[MONTH == 6 | MONTH == 7 | MONTH == 8, season := 'SUMMER']
 summ_dt[MONTH == 9 | MONTH == 10 | MONTH == 11, season := 'AUTUMN']
 
 # Plot crime offenses by day
-date_seq = seq.Date(from = as.Date('2012-01-01'), to = as.Date('2014-12-31'), 'days')
+date_seq = seq.Date(from = as.Date('2011-01-01'), to = as.Date('2013-12-31'), 'days')
 off_day = summ_dt[OFFENSE %in% c('BURGLARY', 'ROBBERY', 'THEFT F/AUTO',
                                  'THEFT/OTHER', 'MOTOR VEHICLE THEFT')]
 g = ggplot(off_day, aes(x = CUM_YDAY,y = DailyCount,group = OFFENSE, colour = OFFENSE)) + geom_smooth()
@@ -85,12 +84,12 @@ ggplot(summ_dt[OFFENSE == off[5]], aes(x = season, y = DailyCount/days_in_month,
                                        group = season, fill = season)) + ggtitle(off[5]) + 
     ylab('Daily crime rate') + xlab('') + theme(legend.position = 'none') +
     geom_boxplot()
-ggsave('./Figures/season_dailyRate_Robbery.png')
+ggsave('./Figures/season_dailyRate_Burglary.png')
 ggplot(summ_dt[OFFENSE == off[6]], aes(x = season, y = DailyCount/days_in_month, 
                                        group = season, fill = season)) + ggtitle(off[6]) + 
     ylab('Daily crime rate') + xlab('') + theme(legend.position = 'none') +
     geom_boxplot()
-ggsave('./Figures/season_dailyRate_Burglary.png')
+ggsave('./Figures/season_dailyRate_Robbery.png')
 
 
 
@@ -101,7 +100,7 @@ xt = table(train$OFFENSE)
 xt = data.frame(xt)
 xt = xt[order(-xt$Freq),]
 names(xt) = c('Offense', 'Count')
-g = plot.offenses(xt, '- Years 2012-2014')
+g = plot.offenses(xt, '- Years 2011-2013')
 save.2figures(g, 'Freq_offenses_trainset.png', leg = F)
 # 2014
 x14 = table(crime2014$OFFENSE)
@@ -110,14 +109,6 @@ x14 = x14[order(-x14$Freq),]
 names(x14) = c('Offense', 'Count')
 g = plot.offenses(x14, 2014)
 save.2figures(g, 'Freq_offenses2014.png', leg = F)
-# 2015
-x15 = table(crime2015$OFFENSE)
-x15 = data.frame(x15)
-x15 = x15[order(-x15$Freq),]
-names(x15) = c('Offense', 'Count')
-g = plot.offenses(x15, 2015)
-save.2figures(g, 'Freq_offenses2015.png', leg = F)
-# 
 
 
 # Auto-correlation

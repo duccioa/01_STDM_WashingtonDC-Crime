@@ -17,11 +17,12 @@ crime2012a = prepare.dataset(crime2012, F, 2012)
 crime2013a = prepare.dataset(crime2013, F, 2013)
 crime2014a = prepare.dataset(crime2014, F, 2014)
 
-df = rbind(crime2011a, crime2012a, crime2013a, crime2014a)
-df$CENSUS_TRACT = as.factor(formatC(df$CENSUS_TRACT, width = 6, flag=0))
+df_crime = rbind(crime2011a, crime2012a, crime2013a, crime2014a)
+write.csv(df, './data/FINAL_crime_full.csv')
+df_crime$CENSUS_TRACT = as.factor(formatC(df_crime$CENSUS_TRACT, width = 6, flag=0))
 rm(crime2014a, crime2013a, crime2012a, crime2011a)
 #JOIN
-df = join(df, census)
+df = join(df_crime, census)
 write.csv(df, './data/FINAL_CrimeCensus_merged.csv')
 
 

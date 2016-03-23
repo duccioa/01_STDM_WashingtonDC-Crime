@@ -19,6 +19,11 @@ rm.last_ch = function(x, n){
 rm.first_ch = function(x, n){
     substr(x, n+1, nchar(x))
 }
+# Calculate the mode of a vector
+getmode <- function(v) {
+    uniqv <- unique(v)
+    uniqv[which.max(tabulate(match(v, uniqv)))]
+}
 # Prepare dataset
 prepare.dataset = function(df, y2011 = F, y){
     require(lubridate)
