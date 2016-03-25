@@ -1,9 +1,18 @@
 library(kernlab)
-load('./data/final_sp.RData')
+library(plyr)
+library(sp)
+library(rgdal)
+source('./Functions/STDM_functions.R')
+census = read.csv('./data/ACS/census_fullset_for_ML.csv', stringsAsFactors = F)
+census = census[,-1]
+census$CENSUS_TRACT = formatC(census$CENSUS_TRACT, width = 6, flag = 00)
+census$YEAR = as.character(census$YEAR)
+svm_data = read.csv('./data/aggr1.csv')
+dc = readOGR('./shp/cb_2014_11_tract_500k/', 'cb_2014_11_tract_500k')
+names(dc@data)[3] = 'CENSUS_TRACT'
+dc@data = dc@data[,-c(2,4,5,6,7,8, 9)]
 
-dc@data$YEAR = as.character(dc@data$YEAR)
-dc2014ind = dc@data$YEAR == '2014'
-dc2014 = dc[dc2014ind,]
+
 
 
 # SVM
@@ -11,14 +20,13 @@ yrs_training = c(2011)
 yr_test = 2014
 season_test = 2 ; season = 'SUMMER'# 1 for WINTER, 2 for SPRING, 3 for SUMMER, 4 for AUTUMN
 off = 'BURGLARY'
-dc@data = dc@data[complete.cases(dc@data),]
-n = 1:nrow(dc@data)
-trainInd = n[dc@data$OFFENSE %in% off & dc@data$YEAR %in% yrs_training]
-yTestInd = n[dc@data$OFFENSE %in% off & dc@data$YEAR %in% yr_test & dc@data[,season] == 1]
-m = median(dc@data$Count[trainInd])
-dc@data$LABEL = ifelse(dc@data$Count <= m, -1, 1)
-X = as.matrix(dc@data[,-c(1,2,3,4,5, ncol(dc@data))])
-y = as.matrix(dc@data$LABEL)
+n = 1:nrow(svm_data)
+trainInd = n[svm_data$OFFENSE %in% off & svm_data$YEAR %in% yrs_training]
+yTestInd = n[svm_data$OFFENSE %in% off & svm_data$YEAR %in% yr_test & svm_data[,season] == 1]
+m = median(svm_data$Count[trainInd])
+svm_data$LABEL = ifelse(svm_data$Count <= m, -1, 1)
+X = as.matrix(svm_data[,-c(1,2,3,4,5, ncol(svm_data))])
+y = as.matrix(svm_data$LABEL)
 XTrain = X[trainInd,]
 XTest = X[yTestInd,]
 yTrain = y[trainInd]
@@ -42,7 +50,7 @@ lbls <- findInterval(pltClass, brks)
 col_palette <- c("orangered", "grey", "plum1")
 png(paste0('./Figures/SVM_', gsub('/', '-', off), '_', season, yr_test, '_C', as.character(c_value), '_', ker, '_', kp, '.png'),
            width = 1200, height = 1000)
-plot(dc[-yTestInd,], col=col_palette[lbls], lwd = .5)
+plot(dc, col=col_palette[lbls], lwd = .5)
 title(main = paste0('SVM Classification results: ', off), sub = paste0('Washington DC, ', season, ' ', yr_test), 
       cex.main = 2, cex.sub = 1.5)
 legend('bottomright', legend = c('Above median', 'Support Vectors','Below median'), fill = col_palette, bty="n", cex = 1.5, title = '')
