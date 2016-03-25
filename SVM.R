@@ -1,8 +1,13 @@
 library(kernlab)
 load('./data/final_sp.RData')
 
+dc@data$YEAR = as.character(dc@data$YEAR)
+dc2014ind = dc@data$YEAR == '2014'
+dc2014 = dc[dc2014ind,]
+
+
 # SVM
-yrs_training = c(2011, 2012, 2013)
+yrs_training = c(2011)
 yr_test = 2014
 season_test = 2 ; season = 'SUMMER'# 1 for WINTER, 2 for SPRING, 3 for SUMMER, 4 for AUTUMN
 off = 'BURGLARY'
@@ -25,7 +30,8 @@ svm_type = "C-svc"
 c_value = 10
 ker = 'rbfdot' # polydot rbfdot
 kp = 'automatic'
-lsModel <- ksvm(x=XTrain, y=yTrain,type=svm_type, kernel = ker, kpar = kp, C = c_value)
+cross_val = 4
+lsModel <- ksvm(x=XTrain, y=yTrain,type=svm_type, kernel = ker, kpar = kp, C = c_value, cross = cross_val)
 lsPred <- predict(lsModel, XTest)
 predErr <- length(which((lsPred-yTest)>0))/length(lsPred)
 

@@ -2,8 +2,8 @@ library(ggplot2)
 library(xts)
 library(lubridate)
 library(data.table)
-source('STDM_functions.R')
-source('FUN_acf_confInt.R')
+source('./Functions/STDM_functions.R')
+source('./Functions/FUN_acf_confInt.R')
 # Plot variables
 title_size = 3
 
