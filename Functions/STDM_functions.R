@@ -6,9 +6,10 @@ plot_spdf_byClassInt <- function(spdf, #SpatialPolygonDataFrame
                                  plot_variable, #Pick the variable to be plotted
                                  n_breaks = 5, #Number of breaks
                                  col_pal = "Reds", #Colour palette
-                                 border_col = "cornsilk3",
+                                 border_col = "black",
+                                 manual_int = F,
                                  style_intervals = "jenks",
-                                 legend_title = '', 
+                                 legend_title = '', legend_size = 0.7,
                                  main_title = '',
                                  subtitle = 'Washington DC'){ #Pick the style for classIntervals
     #display.brewer.all()
@@ -18,8 +19,9 @@ plot_spdf_byClassInt <- function(spdf, #SpatialPolygonDataFrame
     require(RColorBrewer)
     require(classInt)
     col_palette <- brewer.pal(n_breaks, col_pal)
-    breaks <- classIntervals(spdf@data[,plot_variable], n = n_breaks, style = style_intervals)
-    breaks <- breaks$brks
+    if(!manual_int){breaks <- classIntervals(spdf@data[,plot_variable], n = n_breaks, style = style_intervals)
+    breaks <- breaks$brks}
+    else{breaks <- style_intervals}
     plot(spdf,
          col=col_palette[findInterval(spdf@data[,plot_variable],
                                       breaks, 
@@ -27,7 +29,7 @@ plot_spdf_byClassInt <- function(spdf, #SpatialPolygonDataFrame
          main = main_title,
          sub = subtitle)
     legend('bottomright', legend=leglabs(round(breaks, 2)), 
-           fill=col_palette, bty="n", cex = .7, title = legend_title)
+           fill=col_palette, bty="n", cex = legend_size, title = legend_title)
 }
 
 

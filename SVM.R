@@ -88,3 +88,5 @@ D = run.SVM(svm_type = param[1,2],
               config = conf)
 param_df[param_df$Configuration %in% conf,6:9] = D
 
+
+
